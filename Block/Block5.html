@@ -1,0 +1,127 @@
+<!doctype html>
+
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <title>Block</title>
+        <style>
+            * { padding: 0; margin: 0; }
+            canvas { background: #eee; display: block; margin: 0 auto; }
+        </style>
+    </head>
+    <body>
+        <canvas id="myCanvas" width="480" height="480"></canvas>
+
+        <script>
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+            var paddleHeight = 10;
+            var paddleWidth = 80;
+            var paddleX = (canvas.width-paddleWidth)/2;
+            var rightPressed = false;
+            var leftPressed = false;
+            var shiftPressed = false;
+            var spacePressed = false;
+            var moveSpeed = 7.0;
+
+            var c = "#00dddd";
+            var ballRadius = 10;
+            var x = canvas.width/2;
+            var y = canvas.height/2;
+            var dx = Math.random()*3 + 2;
+            var dy = -Math.random()*3 - 2;
+
+            var count = 0;
+
+            function changeColor() {
+                c = 'rgba(' + Math.random()*255
+                      + ',' + Math.random()*255
+                      + ',' + Math.random()*255
+                      + ',' + '0.9)'
+            }
+
+            function drawBall() {
+                ctx.beginPath();
+                ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+                ctx.fillStyle = c;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            function paddleDraw() {
+                ctx.beginPath();
+                ctx.rect(paddleX, canvas.height-50, paddleWidth, paddleHeight);
+                ctx.fillStyle = "#0095dd";
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawBall();
+                paddleDraw();
+
+                if(count > 30) {
+                    if(y + ballRadius > canvas.height - 50 && y + ballRadius < canvas.height - 50 + paddleHeight) {
+                        if(x >= paddleX && x <= paddleX + paddleWidth) {
+                            dx *= 1.02;
+                            dy *= -1.02;
+                            count = 0;
+                        }
+                    }
+                }
+                if(x + dx > canvas.width - ballRadius || x + dx < ballRadius) dx = -dx;
+                if(y + dy < ballRadius) dy = -dy;
+                else if(y > canvas.height - ballRadius) {
+                    clearInterval(interval);
+                    alert("GAME OVER");
+                    document.location.reload();
+                }
+                if(rightPressed && paddleX+paddleWidth < canvas.width) {
+                    paddleX += moveSpeed;
+                }
+                else if(leftPressed && paddleX > 0) {
+                    paddleX -= moveSpeed;
+                }
+
+                x += dx;
+                y += dy;
+                count++;
+            }
+            document.addEventListener("keydown", keyDownHandler, false);
+            document.addEventListener("keyup", keyUpHandler, false);
+
+            var interval = setInterval(draw, 1000/60);
+
+            function keyDownHandler(e) {
+                if(e.keyCode == 16) {
+                    shiftPressed = true;
+                    moveSpeed = 7.0*2;
+                }
+                if(e.keyCode == 32) {
+                    spacePressed = true;
+                    moveSpeed = 7.0/2;
+                }
+                if(e.keyCode == 68 || e.keyCode == 39) rightPressed = true;
+                if(e.keyCode == 65 || e.keyCode == 37) leftPressed = true;
+            }
+            function keyUpHandler(e) {
+                if(e.keyCode == 16) {
+                    shiftPressed = false;
+                    moveSpeed = 7.0;
+                    if(spacePressed) moveSpeed = 7.0/2;
+                }
+                if(e.keyCode == 32){
+                    spacePressed = false;
+                    moveSpeed = 7.0;
+                    if(shiftPressed) moveSpeed = 7.0*2;
+                }
+
+                if(e.keyCode == 68 || e.keyCode == 39) rightPressed = false;
+                if(e.keyCode == 65 || e.keyCode == 37) leftPressed = false;
+            }
+        </script>
+
+    </body>
+</html>
