@@ -9,39 +9,67 @@ var fileRead = 0;
 
 
 function keyDownHandler(e) {
+    if (e.key == "p") {
+        var stageText = "";
+        for (var i = 0; i < stageSize; i++) {
+            for (var j = 0; j < stageSize; j++) {
+                stageText += stage[i][j];
+            }
+            stageText += "\n";
+        }
+        console.log(stageText);
+    }
 
 }
 function keyUpHandler(e) {
 
 }
+function mouseDownHandler(e) {
+    var mouseX = (e.offsetX - e.offsetX % dotSize) / dotSize;
+    var mouseY = (e.offsetY - e.offsetY % dotSize) / dotSize;
+    if (e.offsetX == e.clientX && e.offsetY == e.clientY) console.log("outside canvas");
+    else if (mouseX >= 0 && mouseX < stageSize && mouseY >= 0 && mouseY < stageSize) {
+        stage[mouseY][mouseX] = String((Number(stage[mouseY][mouseX]) + 1) % 5);
+    }
+}
 function readStageFile(e) {
     var file = e.target.files[0];
     var reader = new FileReader();
 
+    if (!file.type.match('text/plain')) {
+        alert("error 1");
+        document.location.reload();
+    }
+    else {
+        reader.readAsText(file);
 
-    if (!file.type.match('text/plain')) document.location.reload();
-    reader.readAsText(file);
+        reader.onload = function (ev) {
+            var str = reader.result.replace(/\r?\n/g, "");
 
-    reader.onload = function (ev) {
-        var str = reader.result.replace(/\r?\n/g, "");
-        if (str.length != stageSize * stageSize) document.location.reload();
-        for (var i = 0; i < stageSize; i++) {
-            stage[i] = [];
-            for (var j = 0; j < stageSize; j++) {
-                stage[i][j] = str.charAt(i * stageSize + j);
+            if (str.length != stageSize * stageSize) {
+                alert("error 2");
+                document.location.reload();
+            }
+            else {
+                for (var i = 0; i < stageSize; i++) {
+                    stage[i] = [];
+                    for (var j = 0; j < stageSize; j++) {
+                        stage[i][j] = str.charAt(i * stageSize + j);
+                    }
+                }
+                fileRead = 1;
             }
         }
-        fileRead = 1;
     }
 }
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener("mousedown", mouseDownHandler, false);
 stageFile.addEventListener("change", readStageFile, false);
 
 function drawStage() {
     for (var i = 0; i < stageSize; i++) {
         for (var j = 0; j < stageSize; j++) {
-            console.log("ok");
             ctx.beginPath();
             ctx.rect(j * dotSize, i * dotSize, dotSize, dotSize);
             switch (stage[i][j]) {

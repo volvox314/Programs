@@ -1,0 +1,8 @@
+[変数宣言の違い]
+var.....再代入OK、再宣言OK
+let.....再代入OK、再宣言NG
+const...再代入NG、再宣言NG(初期値必須)
+
+[File API実装チェック]
+if(window.File) console.log("OK");
+
