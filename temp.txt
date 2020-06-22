@@ -1,0 +1,52 @@
+        switch (stage[posD][posL]) {
+            case "0":
+            case "S":
+                switch (stage[posD][posR]) {
+                    case "0":
+                    case "S":
+                        break;
+                    case "3":
+                        jumpFlag = true;
+                        dotX -= speed;
+                        dotY -= speed;
+                        break;
+                    case "4":
+                        jumpFlag = true;
+                        dotX += speed;
+                        dotY -= speed;
+                        break;
+                    case "5":
+                    case "6":
+                    case "7":
+                    case "8":
+                    case "9":
+                    case "1":
+                        jumpFlag = true;
+                        dotY -= speed;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case "3":
+                jumpFlag = true;
+                dotY -= speed;
+                if(stage[posD][posR] = "4") dotX -= speed;
+                break;
+            case "4":
+                jumpFlag = true;
+                dotX += speed;
+                dotY -= speed;
+                break;
+            case "5":
+            case "6":
+            case "7":
+            case "8":
+            case "9":
+            case "1":
+                jumpFlag = true;
+                dotY -= speed;
+                break;
+            default:
+                break;
+        }

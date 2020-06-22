@@ -1,11 +1,12 @@
 const stageSize = 40;
 const dotSize = 16;
-const speed = 2;
 const dotType = 10;
 
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
+var speed = 2;
 var stage = [];
+var temp = [];
 var stageFile = document.getElementById('file');
 var fileRead = 0;
 var startFind = false;
@@ -19,6 +20,8 @@ var pressD = false;
 var pressW = false;
 var jumpFlag = true;
 var jumpTime = 0;
+var jumpPad = 0;
+var riseFlag = false;
 
 function keyDownHandler(e) {
     switch (e.key) {
@@ -62,6 +65,9 @@ function keyDownHandler(e) {
         case "9":
             stageChange = "9";
             break;
+        case "t":
+            stageChange = "T";
+            break;
         case "a":
             pressA = true;
             break;
@@ -87,6 +93,7 @@ function keyUpHandler(e) {
         case "7":
         case "8":
         case "9":
+        case "t":
             stageChange = "";
             break;
         case "a":
@@ -145,8 +152,10 @@ function readStageFile(e) {
             else {
                 for (let i = 0; i < stageSize; i++) {
                     stage[i] = [];
+                    temp[i] = [];
                     for (let j = 0; j < stageSize; j++) {
                         stage[i][j] = str.charAt(i * stageSize + j);
+                        temp[i][j] = "";
                         if (stage[i][j] == "S") {
                             startFind = true;
                             dotX = j * dotSize;
@@ -210,6 +219,12 @@ function drawStage(ID) {
                 case "G":
                     ctx.fillStyle = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
                     break;
+                case "R":
+                    ctx.fillStyle = "#fac559";
+                    break;
+                case "T":
+                    ctx.fillStyle = "#6c9bd2";
+                    break;
                 default:
                     cancelAnimationFrame(ID);
                     alert("error : " + stage[i][j]);
@@ -239,12 +254,22 @@ function moveDot() {
         collisionSide("d");
         dotX += speed;
     }
-    if (pressW && jumpFlag && jumpTime < 40) {
+    if (pressW && jumpFlag && jumpTime < 40 && !jumpPad && !riseFlag) {
         collisionUp();
         jumpTime++;
         dotY -= speed;
     }
+    else if (jumpPad > 0 && jumpPad <= 80 && !riseFlag) {
+        jumpPad++;
+        collisionUp();
+        dotY -= speed;
+    }
+    else if(riseFlag){
+        collisionUp();
+        dotY -= speed;
+    }
     else {
+        jumpPad = 0;
         collisionDown();
         dotY += speed;
     }
@@ -255,40 +280,85 @@ function collisionDown() {
         let posD = dotY / 16 + 1;
         let posL = Math.floor(dotX / 16);
         let posR = Math.floor((dotX + 15) / 16);
-        switch (stage[posD][posL]) {
-            case "0":
-            case "S":
-                switch (stage[posD][posR]) {
-                    case "0":
-                    case "S":
-                        break;
-                    case "1":
-                    case "3":
-                    case "4":
-                    case "5":
-                    case "6":
-                    case "7":
-                    case "8":
-                    case "9":
-                        jumpFlag = true;
-                        dotY -= speed;
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case "1":
-            case "3":
-            case "4":
-            case "5":
-            case "6":
-            case "7":
-            case "8":
-            case "9":
+        let pattern = stage[posD][posL] + stage[posD][posR];
+        switch (pattern) {
+            case "TT":
+            case "T0":
+            case "0T":
+            case "T1":
+            case "1T":
+            case "T2":
+            case "2T":
+            case "01":
+            case "10":
+            case "11":
+            case "12":
+            case "21":
+            case "S1":
+            case "1S":
+            case "G1":
+            case "1G":
+            case "34":
+            case "43":
                 jumpFlag = true;
                 dotY -= speed;
                 break;
+            case "03":
+            case "30":
+            case "13":
+            case "31":
+            case "23":
+            case "32":
+            case "3S":
+            case "S3":
+            case "3G":
+            case "G3":
+            case "33":
+            case "3T":
+            case "T3":
+                jumpFlag = true;
+                dotY -= speed;
+                dotX -= speed;
+                break;
+            case "04":
+            case "40":
+            case "14":
+            case "41":
+            case "24":
+            case "42":
+            case "S4":
+            case "4S":
+            case "4G":
+            case "G4":
+            case "44":
+            case "4T":
+            case "T4":
+                jumpFlag = true;
+                dotY -= speed;
+                dotX += speed;
+                break;
+            case "05":
+            case "50":
+            case "15":
+            case "51":
+            case "25":
+            case "52":
+            case "35":
+            case "53":
+            case "45":
+            case "54":
+            case "S5":
+            case "5S":
+            case "G5":
+            case "5G":
+            case "55":
+            case "5T":
+            case "T5":
+                jumpPad++;
+                dotY -= speed;
+                break;
             default:
+                jumpFlag = false;
                 break;
         }
     }
@@ -302,9 +372,11 @@ function collisionUp() {
         switch (stage[posU][posL]) {
             case "0":
             case "S":
+            case "T":
                 switch (stage[posU][posR]) {
                     case "0":
                     case "S":
+                    case "T":
                         break;
                     case "1":
                     case "3":
@@ -314,7 +386,9 @@ function collisionUp() {
                     case "7":
                     case "8":
                     case "9":
+                        jumpTime = 50;
                         jumpFlag = false;
+                        jumpPad = 0;
                         dotY += speed;
                         break;
                     default:
@@ -329,7 +403,9 @@ function collisionUp() {
             case "7":
             case "8":
             case "9":
+                jumpTime = 50;
                 jumpFlag = false;
+                jumpPad = 0;
                 dotY += speed;
                 break;
             default:
@@ -394,11 +470,25 @@ function collisionBG(ID) {
         dotX = dotXInit;
         dotY = dotYInit;
     }
+    else if (posLU == "R" || posRU == "R" || posLD == "R" || posRD == "R") {
+        for (let i = 0; i < 40; i++) {
+            for (let j = 0; j < 40; j++) temp[39 - i][39 - j] = stage[i][j];
+        }
+        for (let i = 0; i < 40; i++) {
+            for (let j = 0; j < 40; j++) stage[i][j] = temp[i][j];
+        }
+    }
     else if (posLU == "G" || posRU == "G" || posLD == "G" || posRD == "G") {
         cancelAnimationFrame(ID);
-        alert("Clear!!");
+        alert("Clear!!");00
         document.location.reload();
     }
+    else if (posLU == "T" || posRU == "T" || posLD == "T" || posRD == "T") {
+        jumpFlag = true;
+        jumpTime = 0;
+        riseFlag = true;
+    }
+    else if (posLU != "T" && posRU != "T" && posLD != "T" && posRD != "T") riseFlag = false;
 }
 
 function draw() {
