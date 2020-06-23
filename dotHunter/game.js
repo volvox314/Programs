@@ -5,11 +5,13 @@ const dotType = 10;
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 var speed = 2;
+var frame = 0;
 var stage = [];
+var stageInit = [];
 var temp = [];
 var stageFile = document.getElementById('file');
 var fileRead = 0;
-var startFind = false;
+var startCount = 0;
 var stageChange = "";
 var dotX = 0;
 var dotY = 0;
@@ -29,7 +31,7 @@ function keyDownHandler(e) {
             let stageText = "";
             for (let i = 0; i < stageSize; i++) {
                 for (let j = 0; j < stageSize; j++) {
-                    stageText += stage[i][j];
+                    stageText += stage[i][j].block;
                 }
                 stageText += "\n";
             }
@@ -65,6 +67,9 @@ function keyDownHandler(e) {
         case "9":
             stageChange = "9";
             break;
+        case "r":
+            stageChange = "R";
+            break;
         case "t":
             stageChange = "T";
             break;
@@ -93,6 +98,7 @@ function keyUpHandler(e) {
         case "7":
         case "8":
         case "9":
+        case "r":
         case "t":
             stageChange = "";
             break;
@@ -116,9 +122,7 @@ function mouseDownHandler(e) {
         let mouseX = (e.offsetX - e.offsetX % dotSize) / dotSize;
         let mouseY = (e.offsetY - e.offsetY % dotSize) / dotSize;
         if (mouseX >= 0 && mouseX < stageSize && mouseY >= 0 && mouseY < stageSize) {
-            if (stage[mouseY][mouseX] != "S" && stage[mouseY][mouseX] != "G") {
-                stage[mouseY][mouseX] = String((Number(stage[mouseY][mouseX]) + 1) % dotType);
-            }
+            stage[mouseY][mouseX].block = "0";
         }
     }
 }
@@ -127,7 +131,7 @@ function mouseMoveHandler(e) {
         let mouseX = (e.offsetX - e.offsetX % dotSize) / dotSize;
         let mouseY = (e.offsetY - e.offsetY % dotSize) / dotSize;
         if (mouseX >= 0 && mouseX < stageSize && mouseY >= 0 && mouseY < stageSize) {
-            stage[mouseY][mouseX] = stageChange;
+            stage[mouseY][mouseX].block = stageChange;
         }
     }
 }
@@ -152,12 +156,17 @@ function readStageFile(e) {
             else {
                 for (let i = 0; i < stageSize; i++) {
                     stage[i] = [];
+                    stageInit[i] = [];
                     temp[i] = [];
                     for (let j = 0; j < stageSize; j++) {
-                        stage[i][j] = str.charAt(i * stageSize + j);
-                        temp[i][j] = "";
-                        if (stage[i][j] == "S") {
-                            startFind = true;
+                        stage[i][j] = {};
+                        stageInit[i][j] = {};
+                        temp[i][j] = {};
+                        stage[i][j]["block"] = str.charAt(i * stageSize + j);
+                        stage[i][j]["exist"] = (stage[i][j].block == "7") ? 0 : 1;
+                        stageInit[i][j] = { ...stage[i][j] };
+                        if (stage[i][j].block == "S") {
+                            startCount++;
                             dotX = j * dotSize;
                             dotY = i * dotSize;
                             dotXInit = dotX;
@@ -165,7 +174,7 @@ function readStageFile(e) {
                         }
                     }
                 }
-                if (!startFind) alert("S is not find.");
+                if (startCount != 1) alert("error : Start");
                 else fileRead = 1;
             }
         }
@@ -180,9 +189,11 @@ stageFile.addEventListener("change", readStageFile, false);
 function drawStage(ID) {
     for (let i = 0; i < stageSize; i++) {
         for (let j = 0; j < stageSize; j++) {
+            let block = "";
             ctx.beginPath();
             ctx.rect(j * dotSize, i * dotSize, dotSize, dotSize);
-            switch (stage[i][j]) {
+            block += stage[i][j].exist ? stage[i][j].block : "0";
+            switch (block) {
                 case "0":
                     ctx.fillStyle = "black";
                     break;
@@ -227,7 +238,7 @@ function drawStage(ID) {
                     break;
                 default:
                     cancelAnimationFrame(ID);
-                    alert("error : " + stage[i][j]);
+                    alert("error : " + stage[i][j].block);
                     document.location.reload();
                     break;
             }
@@ -264,7 +275,7 @@ function moveDot() {
         collisionUp();
         dotY -= speed;
     }
-    else if(riseFlag){
+    else if (riseFlag) {
         collisionUp();
         dotY -= speed;
     }
@@ -280,8 +291,10 @@ function collisionDown() {
         let posD = dotY / 16 + 1;
         let posL = Math.floor(dotX / 16);
         let posR = Math.floor((dotX + 15) / 16);
-        let pattern = stage[posD][posL] + stage[posD][posR];
-        switch (pattern) {
+        let posDLR = "";
+        posDLR += stage[posD][posL].exist ? stage[posD][posL].block : "0";
+        posDLR += stage[posD][posR].exist ? stage[posD][posR].block : "0";
+        switch (posDLR) {
             case "TT":
             case "T0":
             case "0T":
@@ -300,6 +313,26 @@ function collisionDown() {
             case "1G":
             case "34":
             case "43":
+            case "6T":
+            case "60":
+            case "61":
+            case "62":
+            case "66":
+            case "T6":
+            case "06":
+            case "16":
+            case "26":
+            case "7T":
+            case "70":
+            case "71":
+            case "72":
+            case "76":
+            case "77":
+            case "T7":
+            case "07":
+            case "17":
+            case "27":
+            case "67":
                 jumpFlag = true;
                 dotY -= speed;
                 break;
@@ -316,6 +349,10 @@ function collisionDown() {
             case "33":
             case "3T":
             case "T3":
+            case "36":
+            case "63":
+            case "37":
+            case "73":
                 jumpFlag = true;
                 dotY -= speed;
                 dotX -= speed;
@@ -333,6 +370,10 @@ function collisionDown() {
             case "44":
             case "4T":
             case "T4":
+            case "46":
+            case "64":
+            case "47":
+            case "74":
                 jumpFlag = true;
                 dotY -= speed;
                 dotX += speed;
@@ -354,6 +395,10 @@ function collisionDown() {
             case "55":
             case "5T":
             case "T5":
+            case "56":
+            case "65":
+            case "57":
+            case "75":
                 jumpPad++;
                 dotY -= speed;
                 break;
@@ -369,11 +414,13 @@ function collisionUp() {
         let posU = dotY / 16 - 1;
         let posL = Math.floor(dotX / 16);
         let posR = Math.floor((dotX + 15) / 16);
-        switch (stage[posU][posL]) {
+        let posUL = stage[posU][posL].exist ? stage[posU][posL].block : "0";
+        let posUR = stage[posU][posR].exist ? stage[posU][posR].block : "0";
+        switch (posUL) {
             case "0":
             case "S":
             case "T":
-                switch (stage[posU][posR]) {
+                switch (posUR) {
                     case "0":
                     case "S":
                     case "T":
@@ -424,10 +471,12 @@ function collisionSide() {
         }
         let posU = Math.floor(dotY / 16);
         let posD = Math.floor((dotY + 15) / 16);
-        switch (stage[posU][posS]) {
+        let posUS = stage[posU][posS].exist ? stage[posU][posS].block : "0";
+        let posDS = stage[posD][posS].exist ? stage[posD][posS].block : "0";
+        switch (posUS) {
             case "0":
             case "S":
-                switch (stage[posD][posS]) {
+                switch (posDS) {
                     case "0":
                     case "S":
                         break;
@@ -462,25 +511,28 @@ function collisionSide() {
 }
 
 function collisionBG(ID) {
-    let posLU = stage[Math.floor(dotY / 16)][Math.floor(dotX / 16)];
-    let posRU = stage[Math.floor(dotY / 16)][Math.floor((dotX + 15) / 16)];
-    let posLD = stage[Math.floor((dotY + 15) / 16)][Math.floor(dotX / 16)];
-    let posRD = stage[Math.floor((dotY + 15) / 16)][Math.floor((dotX + 15) / 16)];
+    let posLU = stage[Math.floor(dotY / 16)][Math.floor(dotX / 16)].block;
+    let posRU = stage[Math.floor(dotY / 16)][Math.floor((dotX + 15) / 16)].block;
+    let posLD = stage[Math.floor((dotY + 15) / 16)][Math.floor(dotX / 16)].block;
+    let posRD = stage[Math.floor((dotY + 15) / 16)][Math.floor((dotX + 15) / 16)].block;
     if (posLU == "2" || posRU == "2" || posLD == "2" || posRD == "2") {
         dotX = dotXInit;
         dotY = dotYInit;
+        for (let i = 0; i < 40; i++) {
+            for (let j = 0; j < 40; j++) stage[i][j] = { ...stageInit[i][j] };
+        }
     }
     else if (posLU == "R" || posRU == "R" || posLD == "R" || posRD == "R") {
         for (let i = 0; i < 40; i++) {
-            for (let j = 0; j < 40; j++) temp[39 - i][39 - j] = stage[i][j];
+            for (let j = 0; j < 40; j++) temp[39 - i][39 - j] = { ...stage[i][j] };
         }
         for (let i = 0; i < 40; i++) {
-            for (let j = 0; j < 40; j++) stage[i][j] = temp[i][j];
+            for (let j = 0; j < 40; j++) stage[i][j] = { ...temp[i][j] };
         }
     }
     else if (posLU == "G" || posRU == "G" || posLD == "G" || posRD == "G") {
         cancelAnimationFrame(ID);
-        alert("Clear!!");00
+        alert("Clear!!"); 00
         document.location.reload();
     }
     else if (posLU == "T" || posRU == "T" || posLD == "T" || posRD == "T") {
@@ -495,10 +547,18 @@ function draw() {
     let requestID = requestAnimationFrame(draw);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (fileRead) {
+        if (!(frame % 90)) {
+            for (let i = 0; i < 40; i++) {
+                for (let j = 0; j < 40; j++) {
+                    if (stage[i][j].block == "6" || stage[i][j].block == "7") stage[i][j].exist ^= 1;
+                }
+            }
+        }
         moveDot();
         collisionBG(requestID);
         drawStage(requestID);
         drawDot();
+        frame++;
     }
 }
 draw();
