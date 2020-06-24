@@ -1,6 +1,5 @@
 const stageSize = 40;
 const dotSize = 16;
-const dotType = 10;
 
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
@@ -73,6 +72,9 @@ function keyDownHandler(e) {
         case "t":
             stageChange = "T";
             break;
+        case "j":
+            stageChange = "J";
+            break;
         case "a":
             pressA = true;
             break;
@@ -100,6 +102,7 @@ function keyUpHandler(e) {
         case "9":
         case "r":
         case "t":
+        case "j":
             stageChange = "";
             break;
         case "a":
@@ -186,6 +189,19 @@ document.addEventListener("mousedown", mouseDownHandler, false);
 document.addEventListener("mousemove", mouseMoveHandler, false);
 stageFile.addEventListener("change", readStageFile, false);
 
+function resetStage(flag) {
+    for (let i = 0; i < 40; i++) {
+        for (let j = 0; j < 40; j++) {
+            if (!flag) {
+                dotX = dotXInit;
+                dotY = dotYInit;
+                stage[i][j] = { ...stageInit[i][j] };
+            }
+            else if (stage[i][j].block == "8" || stage[i][j].block == "9") stage[i][j].exist = 0;
+        }
+    }
+}
+
 function drawStage(ID) {
     for (let i = 0; i < stageSize; i++) {
         for (let j = 0; j < stageSize; j++) {
@@ -231,10 +247,13 @@ function drawStage(ID) {
                     ctx.fillStyle = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
                     break;
                 case "R":
-                    ctx.fillStyle = "#fac559";
+                    ctx.fillStyle = "#622d18";
                     break;
                 case "T":
-                    ctx.fillStyle = "#6c9bd2";
+                    ctx.fillStyle = "#043c78";
+                    break;
+                case "J":
+                    ctx.fillStyle = "#47266e";
                     break;
                 default:
                     cancelAnimationFrame(ID);
@@ -333,7 +352,21 @@ function collisionDown() {
             case "17":
             case "27":
             case "67":
+            case "9T":
+            case "90":
+            case "91":
+            case "92":
+            case "96":
+            case "97":
+            case "99":
+            case "T9":
+            case "09":
+            case "19":
+            case "29":
+            case "69":
+            case "79":
                 jumpFlag = true;
+                jumpTime = 0;
                 dotY -= speed;
                 break;
             case "03":
@@ -353,7 +386,10 @@ function collisionDown() {
             case "63":
             case "37":
             case "73":
+            case "39":
+            case "93":
                 jumpFlag = true;
+                jumpTime = 0;
                 dotY -= speed;
                 dotX -= speed;
                 break;
@@ -374,7 +410,10 @@ function collisionDown() {
             case "64":
             case "47":
             case "74":
+            case "49":
+            case "94":
                 jumpFlag = true;
+                jumpTime = 0;
                 dotY -= speed;
                 dotX += speed;
                 break;
@@ -399,6 +438,8 @@ function collisionDown() {
             case "65":
             case "57":
             case "75":
+            case "59":
+            case "95":
                 jumpPad++;
                 dotY -= speed;
                 break;
@@ -431,9 +472,8 @@ function collisionUp() {
                     case "5":
                     case "6":
                     case "7":
-                    case "8":
                     case "9":
-                        jumpTime = 50;
+                        jumpTime = 40;
                         jumpFlag = false;
                         jumpPad = 0;
                         dotY += speed;
@@ -448,9 +488,8 @@ function collisionUp() {
             case "5":
             case "6":
             case "7":
-            case "8":
             case "9":
-                jumpTime = 50;
+                jumpTime = 40;
                 jumpFlag = false;
                 jumpPad = 0;
                 dotY += speed;
@@ -473,56 +512,40 @@ function collisionSide() {
         let posD = Math.floor((dotY + 15) / 16);
         let posUS = stage[posU][posS].exist ? stage[posU][posS].block : "0";
         let posDS = stage[posD][posS].exist ? stage[posD][posS].block : "0";
-        switch (posUS) {
-            case "0":
-            case "S":
-                switch (posDS) {
-                    case "0":
-                    case "S":
-                        break;
-                    case "1":
-                    case "3":
-                    case "4":
-                    case "5":
-                    case "6":
-                    case "7":
-                    case "8":
-                    case "9":
-                        dotX += fixSpeed;
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case "1":
-            case "3":
-            case "4":
-            case "5":
-            case "6":
-            case "7":
-            case "8":
-            case "9":
+        let posUDS = posUS + posDS;
+        for (let i = 1; i < 10; i++) {
+            if (i == 2 || i == 8) continue;
+            if (posUDS.indexOf(String(i)) != -1) {
                 dotX += fixSpeed;
                 break;
-            default:
-                break;
+            }
         }
     }
 }
 
 function collisionBG(ID) {
-    let posLU = stage[Math.floor(dotY / 16)][Math.floor(dotX / 16)].block;
-    let posRU = stage[Math.floor(dotY / 16)][Math.floor((dotX + 15) / 16)].block;
-    let posLD = stage[Math.floor((dotY + 15) / 16)][Math.floor(dotX / 16)].block;
-    let posRD = stage[Math.floor((dotY + 15) / 16)][Math.floor((dotX + 15) / 16)].block;
-    if (posLU == "2" || posRU == "2" || posLD == "2" || posRD == "2") {
-        dotX = dotXInit;
-        dotY = dotYInit;
-        for (let i = 0; i < 40; i++) {
-            for (let j = 0; j < 40; j++) stage[i][j] = { ...stageInit[i][j] };
+    let posEdge
+        = stage[Math.floor(dotY / 16)][Math.floor(dotX / 16)].block
+        + stage[Math.floor(dotY / 16)][Math.floor((dotX + 15) / 16)].block
+        + stage[Math.floor((dotY + 15) / 16)][Math.floor(dotX / 16)].block
+        + stage[Math.floor((dotY + 15) / 16)][Math.floor((dotX + 15) / 16)].block;
+    let posEdgeState
+        = String(stage[Math.floor(dotY / 16)][Math.floor(dotX / 16)].exist)
+        + String(stage[Math.floor(dotY / 16)][Math.floor((dotX + 15) / 16)].exist)
+        + String(stage[Math.floor((dotY + 15) / 16)][Math.floor(dotX / 16)].exist)
+        + String(stage[Math.floor((dotY + 15) / 16)][Math.floor((dotX + 15) / 16)].exist);
+    if (posEdge.indexOf("6") != -1 || posEdge.indexOf("7") != -1) {
+        for (let i = 0; i < 4; i++) {
+            let judge = posEdge.substring(i, i + 1) + posEdgeState.substring(i, i + 1);
+            if (judge == "61" || judge == "71") {
+                resetStage(0);
+                break;
+            }
         }
     }
-    else if (posLU == "R" || posRU == "R" || posLD == "R" || posRD == "R") {
+    if (posEdge.indexOf("2") != -1) resetStage(0);
+    else if (posEdge.indexOf("8") != -1) resetStage(1);
+    else if (posEdge.indexOf("R") != -1) {
         for (let i = 0; i < 40; i++) {
             for (let j = 0; j < 40; j++) temp[39 - i][39 - j] = { ...stage[i][j] };
         }
@@ -530,17 +553,21 @@ function collisionBG(ID) {
             for (let j = 0; j < 40; j++) stage[i][j] = { ...temp[i][j] };
         }
     }
-    else if (posLU == "G" || posRU == "G" || posLD == "G" || posRD == "G") {
+    else if (posEdge.indexOf("G") != -1) {
         cancelAnimationFrame(ID);
-        alert("Clear!!"); 00
+        alert("Clear!!");
         document.location.reload();
     }
-    else if (posLU == "T" || posRU == "T" || posLD == "T" || posRD == "T") {
+    if (posEdge.indexOf("T") != -1) {
         jumpFlag = true;
         jumpTime = 0;
         riseFlag = true;
     }
-    else if (posLU != "T" && posRU != "T" && posLD != "T" && posRD != "T") riseFlag = false;
+    else if (posEdge.indexOf("T") == -1) riseFlag = false;
+    if (posEdge.indexOf("J") != -1) {
+        jumpFlag = true;
+        jumpTime = 39;
+    }
 }
 
 function draw() {
