@@ -75,6 +75,9 @@ function keyDownHandler(e) {
         case "j":
             stageChange = "J";
             break;
+        case "v":
+            stageChange = "V";
+            break;
         case "a":
             pressA = true;
             break;
@@ -103,6 +106,7 @@ function keyUpHandler(e) {
         case "r":
         case "t":
         case "j":
+        case "v":
             stageChange = "";
             break;
         case "a":
@@ -223,7 +227,7 @@ function drawStage(ID) {
                     ctx.fillStyle = "green";
                     break;
                 case "4":
-                    ctx.fillStyle = "blue";
+                    ctx.fillStyle = "#1111FF";
                     break;
                 case "5":
                     ctx.fillStyle = "magenta";
@@ -247,13 +251,16 @@ function drawStage(ID) {
                     ctx.fillStyle = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
                     break;
                 case "R":
-                    ctx.fillStyle = "#622d18";
+                    ctx.fillStyle = "#663300";
                     break;
                 case "T":
-                    ctx.fillStyle = "#043c78";
+                    ctx.fillStyle = "#330033";
                     break;
                 case "J":
-                    ctx.fillStyle = "#47266e";
+                    ctx.fillStyle = "#003366";
+                    break;
+                case "V":
+                    ctx.fillStyle = "#660000";
                     break;
                 default:
                     cancelAnimationFrame(ID);
@@ -365,6 +372,20 @@ function collisionDown() {
             case "29":
             case "69":
             case "79":
+            case "J1":
+            case "J3":
+            case "J4":
+            case "J5":
+            case "J6":
+            case "J7":
+            case "J9":
+            case "9J":
+            case "7J":
+            case "6J":
+            case "5J":
+            case "4J":
+            case "3J":
+            case "1J":
                 jumpFlag = true;
                 jumpTime = 0;
                 dotY -= speed;
@@ -388,6 +409,8 @@ function collisionDown() {
             case "73":
             case "39":
             case "93":
+            case "3J":
+            case "J3":
                 jumpFlag = true;
                 jumpTime = 0;
                 dotY -= speed;
@@ -412,6 +435,8 @@ function collisionDown() {
             case "74":
             case "49":
             case "94":
+            case "4J":
+            case "J4":
                 jumpFlag = true;
                 jumpTime = 0;
                 dotY -= speed;
@@ -432,6 +457,8 @@ function collisionDown() {
             case "G5":
             case "5G":
             case "55":
+            case "5R":
+            case "R5":
             case "5T":
             case "T5":
             case "56":
@@ -440,6 +467,10 @@ function collisionDown() {
             case "75":
             case "59":
             case "95":
+            case "5J":
+            case "J5":
+            //case "5V":
+            //case "V5":
                 jumpPad++;
                 dotY -= speed;
                 break;
@@ -460,12 +491,12 @@ function collisionUp() {
         switch (posUL) {
             case "0":
             case "S":
+            case "G":
+            case "R":
             case "T":
+            case "J":
+            case "V":
                 switch (posUR) {
-                    case "0":
-                    case "S":
-                    case "T":
-                        break;
                     case "1":
                     case "3":
                     case "4":
@@ -568,6 +599,7 @@ function collisionBG(ID) {
         jumpFlag = true;
         jumpTime = 39;
     }
+    if (posEdge.indexOf("V") != -1) dotY = canvas.height - dotSize - dotY;
 }
 
 function draw() {
