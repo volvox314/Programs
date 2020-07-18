@@ -1,0 +1,32 @@
+{
+  "name": "dotHunter",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^9.1.0",
+    "electron-builder": "^22.7.0"
+  },
+  "build": {
+    "productName": "volvoxHunter",
+    "mac": {
+      "icon": "volvox_512x512.png",
+      "target": [
+        "dmg"
+      ]
+    },
+    "win": {
+      "icon": "volvox_512x512.png",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "scripts": {
+    "start": "npx electron .",
+    "pack": "npx electron-builder --dir",
+    "dist": "npx electron-builder"
+  }
+}
