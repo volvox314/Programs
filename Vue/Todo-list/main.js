@@ -1,4 +1,4 @@
-var STORAGE_KEY = 'todos-vuejs-demo'
+var STORAGE_KEY = 'todos-vuejs-demo';
 var todoStorage = {
     fetch: function () {
         var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
@@ -8,16 +8,47 @@ var todoStorage = {
         todoStorage.uid = todos.length;
         return todos;
     },
+
     save: function (todos) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
     }
-}
+};
 
 var app = new Vue({
     el: '#app',
 
     data: {
-        todos: []
+        todos: [],
+        options: [
+            { value: -1, label: 'All' },
+            { value: 0, label: 'Working' },
+            { value: 1, label: 'Complete' }
+        ],
+        current: -1
+    },
+
+    methods: {
+        doAdd: function (event, value) {
+            var comment = this.$refs.comment;
+            if (!comment.value.length) return;
+
+            this.todos.push({
+                id: todoStorage.uid,
+                comment: comment.value,
+                state: 0
+            });
+
+            comment.value = '';
+        },
+
+        doChangeState: function (item) {
+            item.state = item.state ? 0 : 1;
+        },
+
+        doRemove: function (item) {
+            var index = this.todos.indexOf(item);
+            this.todos.splice(index, 1);
+        }
     },
 
     watch: {
@@ -29,31 +60,7 @@ var app = new Vue({
         }
     },
 
-    created(){
+    created() {
         this.todos = todoStorage.fetch();
-    },
-
-    methods: {
-        doAdd: function (event, value) {
-            var comment = this.$refs.comment;
-            if (!comment.value.length) return;
-
-            this.todos.push({
-                id: todoStorage.uid++,
-                comment: comment.value,
-                state: 0
-            });
-
-            comment.value = '';
-        },
-
-        doChangeState: function(item){
-            item.state = item.state ? 0 : 1;
-        },
-
-        doRemove: function(item){
-            var index = this.todos.indexOf(item);
-            this.todos.splice(index, 1);
-        }
     }
 })
