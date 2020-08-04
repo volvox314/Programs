@@ -14,7 +14,7 @@
         <label v-for="label in options">
             <input type="radio"
                 v-model="current"
-                v-bind:value="label.value">{{ label.value }}
+                v-bind:value="label.value">{{ label.label }}
         </label>
 
         <table>
@@ -27,12 +27,12 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="item in todos" v-bind:key="item.id">
+                <tr v-for="item in computedTodos" v-bind:key="item.id">
                     <th>{{ item.id }}</th>
                     <td>{{ item.comment }}</td>
                     <td class="state">
                         <button v-on:click="doChangeState(item)">
-                            {{ item.state }}
+                            {{ labels[item.state] }}
                         </button>
                     </td>
                     <td class="button">
@@ -43,6 +43,8 @@
                 </tr>
             </tbody>
         </table>
+
+        (Showing {{ computedTodos.length }} ToDo)
 
         <h2>Add ToDo</h2>
         <form class="add-form" v-on:submit.prevent="doAdd">
