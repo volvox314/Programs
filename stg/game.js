@@ -1,6 +1,6 @@
-const playerSize = 4;
-const bossSize = 40;
-const bulletSize = 6;
+const playerSize = 2;
+const bossSize = 30;
+const bulletSize = 10;
 const moveSpeed = 4;
 
 var canvas = document.getElementById("myCanvas");
@@ -9,11 +9,12 @@ var px = canvas.width / 2;
 var py = canvas.height * 7 / 8;
 var ex = canvas.width / 2;
 var ey = canvas.height / 8;
+var bCount = 0;
+var score = 0;
 var pressW = false;
 var pressA = false;
 var pressS = false;
 var pressD = false;
-var pressC = false;
 var slowMove = false;
 var bullets = 0;
 var bullet = [];
@@ -35,10 +36,6 @@ function keyDownHander(e) {
         case "d":
         case "D":
             pressD = true;
-            break;
-        case "c":
-        case "C":
-            pressC = true;
             break;
         case "Shift":
             slowMove = true;
@@ -65,10 +62,6 @@ function keyUpHander(e) {
         case "d":
         case "D":
             pressD = false;
-            break;
-        case "c":
-        case "C":
-            pressC = false;
             break;
         case "Shift":
             slowMove = false;
@@ -112,11 +105,22 @@ function movePlayer() {
     }
 }
 
+function moveBoss() {
+    ex = canvas.width / 2 - 180 * Math.sin(Math.PI * bCount / 60);
+    ey = canvas.height / 2 - 300 * (Math.cos(Math.PI * bCount / 150));
+    bCount++;
+}
+
 function drawBoss() {
+    ctx.save();
     ctx.beginPath();
-    ctx.rect(ex - bossSize / 2, ey - bossSize / 2, bossSize, bossSize);
+    ctx.translate(ex, ey);
+    ctx.rotate(bCount * Math.PI / 20);
+    ctx.translate(-ex, -ey);
     ctx.fillStyle = "purple";
+    ctx.rect(ex - bossSize / 2, ey - bossSize / 2, bossSize, bossSize);
     ctx.fill();
+    ctx.restore();
 }
 
 function drawPlayer() {
@@ -133,14 +137,28 @@ function drawPlayer() {
 }
 
 function createBullet() {
-    if (pressC) {
-        bullets++;
-        bullet.push({
-            x: ex,
-            y: ey,
-            angle: Math.PI * Math.random() * 2,
-            speed: Math.random() * 2 + 1
-        });
+    bullets++;
+    bullet.push({
+        x: ex,
+        y: ey,
+        angle: Math.PI * 2 * Math.random(),
+        speed: Math.random() + 1
+    });
+}
+
+function collisionBullet(ID) {
+    for (let i = 0; i < bullets; i++) {
+        let dx = Math.abs(px - bullet[i].x);
+        let dy = Math.abs(py - bullet[i].y);
+        if (Math.sqrt(dx * dx + dy * dy) < playerSize + bulletSize) {
+            ctx.font = "80px Arial Bold";
+            ctx.fillStyle = "red";
+            ctx.fillText("死", canvas.width / 2 - 36, canvas.height / 2);
+            ctx.font = "12px Arial Bold";
+            ctx.fillStyle = "red";
+            ctx.fillText("D E A T H", canvas.width / 2 - 24, canvas.height / 2 + 24);
+            cancelAnimationFrame(ID);
+        }
     }
 }
 
@@ -150,32 +168,36 @@ function drawBullet() {
         bullet[i].y += Math.sin(bullet[i].angle) * bullet[i].speed;
         ctx.beginPath();
         ctx.arc(bullet[i].x, bullet[i].y, bulletSize, 0, Math.PI * 2, false);
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "rgb(80,80,80)";
         ctx.fill();
     }
 }
 
 function deleteBullet() {
     for (let i = 0; i < bullets; i++) {
-        if (bullet[i].x > canvas.width + 20) {
+        if (bullet[i].x > canvas.width + 10) {
             bullet.splice(i, 1);
             bullets--;
             i--;
+            score++;
         }
-        else if (bullet[i].x < -20) {
+        else if (bullet[i].x < -10) {
             bullet.splice(i, 1);
             bullets--;
             i--;
+            score++;
         }
-        else if (bullet[i].y > canvas.height + 20) {
+        else if (bullet[i].y > canvas.height + 10) {
             bullet.splice(i, 1);
             bullets--;
             i--;
+            score++;
         }
-        else if (bullet[i].y < -20) {
+        else if (bullet[i].y < -10) {
             bullet.splice(i, 1);
             bullets--;
             i--;
+            score++;
         }
     }
 }
@@ -185,10 +207,15 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     movePlayer();
+    moveBoss();
     createBullet();
     deleteBullet();
     drawBoss();
     drawPlayer();
     drawBullet();
+    collisionBullet(requestID);
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "Orange";
+    ctx.fillText("Score : " + score, 360, 20);
 
 } draw();
