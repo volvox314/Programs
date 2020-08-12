@@ -1,6 +1,5 @@
 const playerSize = 2;
-const bossSize = 30;
-const bulletSize = 10;
+const bossSize = 40;
 const moveSpeed = 4;
 
 var canvas = document.getElementById("myCanvas");
@@ -90,18 +89,26 @@ function movePlayer() {
     if (pressW) {
         if (py > playerSize)
             py -= moveSpeed / (diagonalJudge() ? Math.sqrt(2) : 1) / (slowMove ? 2 : 1);
+        else
+            py = playerSize;
     }
     if (pressA) {
         if (px > playerSize)
             px -= moveSpeed / (diagonalJudge() ? Math.sqrt(2) : 1) / (slowMove ? 2 : 1);
+        else
+            px = playerSize;
     }
     if (pressS) {
         if (py < canvas.height - playerSize)
             py += moveSpeed / (diagonalJudge() ? Math.sqrt(2) : 1) / (slowMove ? 2 : 1);
+        else
+            py = canvas.height - playerSize;
     }
     if (pressD) {
         if (px < canvas.width - playerSize)
             px += moveSpeed / (diagonalJudge() ? Math.sqrt(2) : 1) / (slowMove ? 2 : 1);
+        else
+            px = canvas.width - playerSize;
     }
 }
 
@@ -136,13 +143,14 @@ function drawPlayer() {
     ctx.fill();
 }
 
-function createBullet() {
+function createBullet(s = 1, a = Math.random()) {
     bullets++;
     bullet.push({
         x: ex,
         y: ey,
-        angle: Math.PI * 2 * Math.random(),
-        speed: Math.random() + 1
+        angle: Math.PI * 2 * a,
+        speed: Math.random() + s,
+        size: 6 + Math.floor(bCount / 300)
     });
 }
 
@@ -150,13 +158,13 @@ function collisionBullet(ID) {
     for (let i = 0; i < bullets; i++) {
         let dx = Math.abs(px - bullet[i].x);
         let dy = Math.abs(py - bullet[i].y);
-        if (Math.sqrt(dx * dx + dy * dy) < playerSize + bulletSize) {
-            ctx.font = "80px Arial Bold";
+        if (Math.sqrt(dx * dx + dy * dy) < playerSize + bullet[i].size) {
+            ctx.font = "Bold 120px MS Mincho";
             ctx.fillStyle = "red";
-            ctx.fillText("死", canvas.width / 2 - 36, canvas.height / 2);
-            ctx.font = "12px Arial Bold";
+            ctx.fillText("草", canvas.width / 2 - 60, canvas.height / 2);
+            ctx.font = "Bold 14px Arial";
             ctx.fillStyle = "red";
-            ctx.fillText("D E A T H", canvas.width / 2 - 24, canvas.height / 2 + 24);
+            ctx.fillText("W  A  R  O  T  A", canvas.width / 2 - 50, canvas.height / 2 + 36);
             cancelAnimationFrame(ID);
         }
     }
@@ -167,7 +175,7 @@ function drawBullet() {
         bullet[i].x += Math.cos(bullet[i].angle) * bullet[i].speed;
         bullet[i].y += Math.sin(bullet[i].angle) * bullet[i].speed;
         ctx.beginPath();
-        ctx.arc(bullet[i].x, bullet[i].y, bulletSize, 0, Math.PI * 2, false);
+        ctx.arc(bullet[i].x, bullet[i].y, bullet[i].size, 0, Math.PI * 2, false);
         ctx.fillStyle = "rgb(80,80,80)";
         ctx.fill();
     }
@@ -214,8 +222,8 @@ function draw() {
     drawPlayer();
     drawBullet();
     collisionBullet(requestID);
-    ctx.font = "16px Arial";
-    ctx.fillStyle = "Orange";
-    ctx.fillText("Score : " + score, 360, 20);
+    ctx.font = "italic 16px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText("Score : " + score, 350, 20);
 
 } draw();
