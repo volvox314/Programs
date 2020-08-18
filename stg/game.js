@@ -214,6 +214,11 @@ function draw() {
     let requestID = requestAnimationFrame(draw);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "Black";
+    ctx.fill();
+
     movePlayer();
     moveBoss();
     createBullet();
